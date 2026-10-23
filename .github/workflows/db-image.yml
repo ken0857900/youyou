@@ -1,0 +1,32 @@
+# 确认开发数据库镜像在 Intel（Windows/云服务器）和 ARM（Apple 芯片 Mac）上都编译得过，
+# 并实际启动一次检查 pgvector 与中文分词能用
+name: db-image
+on:
+  push:
+    paths: ['docker/**', '.github/workflows/db-image.yml']
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: build amd64 + arm64
+        uses: docker/build-push-action@v6
+        with:
+          context: docker/postgres
+          platforms: linux/amd64,linux/arm64
+          push: false
+      - name: smoke test
+        run: |
+          docker build -t pf-db docker/postgres
+          docker run -d --name db -e POSTGRES_PASSWORD=x pf-db
+          for i in $(seq 60); do
+            [ "$(docker exec db psql -U postgres -tAc "SELECT count(*) FROM pg_ts_config WHERE cfgname='chinese'" 2>/dev/null)" = "1" ] && break
+            sleep 2
+          done
+          docker exec db psql -U postgres -v ON_ERROR_STOP=1 \
+            -c "SELECT extname, extversion FROM pg_extension" \
+            -c "SELECT to_tsvector('chinese', '北京大学计算机保研失败后考研上岸')" \
+            -c "SELECT '[1,2,3]'::vector <-> '[1,2,4]'::vector AS distance"

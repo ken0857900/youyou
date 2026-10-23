@@ -1,0 +1,4 @@
+# 统一用 LF，Windows / Mac 混着改也不会出现整份文件都被改过的假 diff
+* text=auto eol=lf
+*.png binary
+*.jpg binary

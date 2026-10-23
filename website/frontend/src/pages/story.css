@@ -1,0 +1,118 @@
+/* 「前路」（全站右边的小签点开，见 components/PathDock.jsx）：水墨山＋往红日去的山路＋六步卡片。动画在 storyScene.js
+   .pin＝钉住、往下滚动走山路（桌面且没开减少动态效果）；没有 .pin 时六步直接列出来 */
+.lm-path { --gx: max(16px, calc(50vw - 574px)); position: relative; margin: 64px calc(50% - 50vw) 0; background: var(--paper-2); border-block: 1px solid var(--fg); }
+/* --stage-h：钉住的那一屏多高。整页时是视窗减页头；放在小视窗里由 storyScene.js 量捲动容器的高度写进来 */
+.lm-path { --stage-h: calc(100vh - var(--hd)); }
+.lm-path.pin { height: calc(var(--stage-h) * 3.8); }
+.lp-stage { position: relative; overflow: hidden; display: grid; gap: 28px; padding: 40px 16px; }
+/* 钉住时左栏上下排：标题在上、卡片在下，中间撑开；窗口再矮也不会叠在一起 */
+.lm-path.pin .lp-stage { position: sticky; top: var(--hd); height: var(--stage-h); display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 16px; padding: clamp(24px, 5vh, 56px) var(--gx) clamp(20px, 6vh, 56px); }
+.lp-stage canvas, .lp-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.lm-path:not(.pin) .lp-svg { display: none; }
+/* 山路只画在卡片右边那块，整条缩进去（meet）：窗口窄或矮都不会压到卡片、也不会切掉节点 */
+/* 卡片寬跟著視窗縮（--card），窄螢幕時山路才不會被擠成右邊一小條 */
+.lm-path.pin { --card: clamp(260px, 34vw, 400px); }
+.lm-path.pin .lp-svg { inset: 60px var(--gx) 32px calc(var(--gx) + var(--card) + 16px); width: auto; height: auto; }
+
+.lp-trail { fill: none; stroke: var(--fg); stroke-opacity: .3; stroke-width: 1.5; stroke-dasharray: 2 7; stroke-linecap: round; }
+.lp-ink { fill: none; stroke: var(--fg); stroke-width: 3.5; stroke-linecap: round; }
+.lp-node { cursor: pointer; }
+.lp-node circle { fill: var(--bg); stroke: var(--fg); stroke-width: 1.5; transition: fill .4s, stroke .4s, r .3s; }
+.lp-node text { font: 600 15px var(--serif); text-anchor: middle; fill: var(--fg); pointer-events: none; transition: fill .4s; }
+.lp-node.done circle { fill: var(--fg); }
+.lp-node.done text { fill: var(--bg); }
+.lp-node.on circle { fill: var(--accent-2); stroke: var(--accent-2); r: 19; }
+.lp-node.on text { fill: var(--on-accent); }
+.lp-me, .lp-sun { fill: var(--accent-2); }
+.lp-sun { opacity: .88; }
+
+.lp-cap, .lp-card { position: relative; z-index: 1; }
+.lp-cap { display: grid; gap: 10px; justify-items: start; max-width: 30em; }
+.lp-label { display: inline-flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 600; letter-spacing: .28em; }
+.lp-label::before { content: ""; width: 28px; height: 2px; background: var(--accent-2); }
+.lp-cap h2 { font: 900 clamp(28px, 3.8vw, 46px)/1.3 var(--serif); }
+.lp-cap p { margin: 0; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.lp-cap b { color: var(--fg); font: 600 18px var(--serif); }
+
+.lp-card { display: grid; gap: 12px; padding: 20px 22px; border: 1px solid color-mix(in srgb, var(--fg) 30%, transparent); border-radius: 16px;
+  background: color-mix(in srgb, var(--bg) 86%, transparent); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.lm-path.pin .lp-card { width: min(var(--card), 100%); }
+@media (max-height: 700px) { .lm-path.pin .lp-cap h2 { font-size: 28px; } .lm-path.pin .lp-card { padding: 14px 18px; gap: 8px; } .lm-path.pin .lp-q { font-size: 14px; } }
+.lp-kicker { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: .28em; }
+.lp-kicker em { font-style: normal; color: var(--gold-ink); }
+.lp-q { margin: 0; font: 400 16px/1.7 var(--serif); }
+.lp-q b { font-weight: 600; }
+.lp-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.lp-steps li { display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: baseline; }
+.lp-steps .k { grid-row: span 2; font: 600 22px var(--serif); color: var(--accent-2); }
+.lp-steps b { font: 600 16px var(--serif); }
+.lp-steps small { font-size: 13px; line-height: 1.6; color: var(--muted); }
+/* 钉住时一次只亮一格：六格叠在同一个位置，换步时淡入淡出 */
+.lm-path.pin .lp-steps { grid-template-columns: 1fr; min-height: 5.4em; }
+.lm-path.pin .lp-steps li { grid-area: 1 / 1; opacity: 0; transform: translateY(10px); transition: opacity .45s, transform .45s; }
+.lm-path.pin .lp-steps li.on { opacity: 1; transform: none; }
+.lm-path.pin .lp-steps .k { font-size: 40px; line-height: 1; }
+
+.lp-res { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; font-size: 14px; transition: opacity .5s, transform .5s; }
+.lm-path.pin .lp-res { opacity: 0; transform: translateY(8px); pointer-events: none; }
+.lm-path.pin.end .lp-res { opacity: 1; transform: none; pointer-events: auto; }
+.lp-res .res-k { font-size: 13px; color: var(--muted); }
+.lp-res .chip { padding: 5px 12px; border: 1px solid var(--rule); border-radius: 999px; background: var(--bg); font-weight: 500; }
+.lp-res .go { padding: 8px 18px; border: 0; border-radius: 999px; background: var(--fg); color: var(--bg); font-weight: 600; transition: background .25s, color .25s; }
+.lp-res .go:hover { background: var(--accent-2); color: var(--on-accent); }
+.lp-hint { position: absolute; z-index: 1; top: 14px; right: var(--gx); font-size: 12px; color: var(--muted); }
+
+/* ===== 全站右边的「前路」小签＋点开的全屏面板（components/PathDock.jsx） ===== */
+.lp-tab { position: fixed; right: 0; top: 50%; z-index: 35; transform: translateY(-50%);
+  /* 直排时 flex 的主轴是上下：小红日在上、字在下，签子才窄 */
+  display: flex; align-items: center; gap: 5px; padding: 9px 5px 8px; border: 1px solid var(--fg); border-right: 0; border-radius: 6px 0 0 6px;
+  background: var(--fg); color: var(--bg); font: 600 13px/1 var(--serif); letter-spacing: .12em; writing-mode: vertical-rl; cursor: pointer; transition: padding .25s, background .25s; }
+.lp-tab i { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--accent-2); }  /* 小红日 */
+.lp-tab:hover, .lp-tab:focus-visible { padding-right: 9px; background: var(--accent-2); }
+.lp-tab:hover i, .lp-tab:focus-visible i { background: var(--bg); }
+@media (max-width: 760px) { .lp-tab { padding: 8px 4px 7px; font-size: 12px; } }
+@media (max-width: 640px) { .lp-tab { top: auto; bottom: 88px; transform: none; } }  /* 手机：挪到右下（Top 按钮上面），不压在内容中间 */
+
+/* 跳出来置中的小视窗，后面半透明遮罩，点遮罩关；手机一样是小视窗，四周留边 */
+.lp-dock-bg { position: fixed; inset: 0; z-index: 54; background: color-mix(in srgb, var(--fg) 45%, transparent); animation: lp-fade .3s; }
+@keyframes lp-fade { from { opacity: 0; } }
+.lp-dock { position: fixed; z-index: 55; top: 50%; left: 50%; translate: -50% -50%; width: min(1180px, 90vw); height: min(720px, 86vh);
+  border: 1px solid var(--fg); border-radius: 16px; overflow: hidden; background: var(--paper-2); box-shadow: 0 30px 80px -30px rgb(0 0 0 / .5);
+  animation: lp-dock-in .35s cubic-bezier(.2, .7, .2, 1); }
+@keyframes lp-dock-in { from { transform: translateY(16px) scale(.97); opacity: 0; } }
+.lp-dock-scroll { --hd: 0px; position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain; }  /* 面板里没有页头，钉住从最上面开始 */
+.lp-dock .lm-path { --gx: 32px; --card: 360px; margin: 0; min-height: 100%; border-block: 0; }
+.lp-dock .lp-cap h2 { font-size: 34px; }
+.lp-dock .lp-hint { right: calc(var(--gx) + 56px); }
+@media (max-width: 719px) {
+  .lp-dock { width: calc(100vw - 24px); height: min(680px, 84vh); border-radius: 14px; }
+  .lp-dock .lm-path { --gx: 16px; }
+  .lp-dock .lp-dock-x { top: 10px; right: 10px; width: 34px; height: 34px; }
+  /* 手机上下排：标题在上、山路中间、六步卡片在下，一样往下滑走山路 */
+  .lm-path.pin .lp-stage { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 6px; padding: 16px 14px 14px; }
+  .lm-path.pin .lp-cap { grid-row: 1; gap: 4px; padding-right: 40px; }  /* 右边让给 ✕ */
+  .lp-dock .lp-cap h2 { font-size: 22px; line-height: 1.35; }
+  .lm-path.pin .lp-cap p { font-size: 12px; }
+  .lm-path.pin .lp-cap b { font-size: 15px; }
+  .lm-path.pin .lp-svg { position: relative; inset: auto; width: 100%; height: 100%; grid-row: 2; }
+  .lm-path.pin .lp-card { grid-row: 3; width: 100%; padding: 12px 14px; gap: 8px; }
+  .lm-path.pin .lp-q, .lm-path.pin .lp-hint { display: none; }
+  .lm-path.pin:not(.end) .lp-res { display: none; }  /* 走到底才出现，平常不占卡片的位置，山路才大 */
+  .lm-path.pin .lp-steps { min-height: 0; }
+  /* 步骤编号改成小圆章：「一」放大是一条横线，跟标题挤在一起像破折号 */
+  .lm-path.pin .lp-steps li { align-items: center; column-gap: 10px; }
+  .lm-path.pin .lp-steps .k { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-2); color: var(--on-accent); font-size: 17px; }
+  .lm-path.pin .lp-steps b { font-size: 15px; }
+  .lm-path.pin .lp-steps small { font-size: 12px; line-height: 1.5; }
+  /* 山路缩得比电脑小，节点放大才点得到 */
+  .lp-node circle { r: 24; }
+  .lp-node.on circle { r: 28; }
+  .lp-node text { font-size: 22px; dominant-baseline: central; }
+  .lp-node text[dy] { transform: translateY(-5px); }
+  .lp-ink { stroke-width: 5; }
+  .lp-me { r: 9; }
+}
+.lp-dock-x { position: absolute; top: 14px; right: 16px; z-index: 2; width: 40px; height: 40px; border: 1px solid var(--fg); border-radius: 50%;
+  background: var(--bg); color: var(--fg); font-size: 16px; display: grid; place-items: center; transition: background .25s, color .25s; }
+.lp-dock-x:hover { background: var(--fg); color: var(--bg); }
+@media (prefers-reduced-motion: reduce) { .lp-dock, .lp-dock-bg { animation: none; } }

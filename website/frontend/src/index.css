@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/* 不連 Google Fonts，用系統字體（中文本來就吃系統字） */
+@theme {
+  --font-sans: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --color-brand-50: #faf5ec;
+  --color-brand-100: #f0e5d3;
+  --color-brand-200: #e2cda9;
+  --color-brand-300: #d6bb91;
+  --color-brand-400: #c9a46e;
+  --color-brand-500: #a57c45;
+  --color-brand-600: #8a6337;
+  --color-brand-700: #73502e;
+  --color-brand-800: #5c412a;
+  --color-brand-900: #3f3023;
+  --color-brand-950: #2b241c;
+  --color-stone-50: #f7f3ec;
+  --color-stone-100: #efe9df;
+  --color-stone-200: #e1d8ca;
+  --color-stone-300: #cfc2af;
+  --color-stone-400: #a99a85;
+  --color-stone-500: #81715e;
+  --color-stone-600: #6d5e4d;
+  --color-stone-700: #544738;
+  --color-stone-800: #40372d;
+  --color-stone-900: #302d27;
+  --color-stone-950: #211e19;
+}
+
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: #efe9df; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cfc2af; border-radius: 4px; }
+@keyframes heroSlideIn { from { transform: translateX(40px); } to { transform: translateX(0); } }
+.hero-slide { animation: heroSlideIn 1s ease-out; }
+
+.brand-story-copy strong { color: #302d27; font-weight: 600; }
+
+/* Compensate for CSS letter-spacing after the final letter. */
+.brand-eyebrow { display: inline-block; letter-spacing: 0.35em; text-indent: 0.35em; }
+.hero-photo { filter: saturate(0.8); }
+@media (prefers-reduced-motion: reduce) {
+  .hero-slide { animation: none; }
+}

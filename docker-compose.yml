@@ -1,0 +1,14 @@
+# 本地开发数据库：docker compose up -d
+services:
+  db:
+    build: ./docker/postgres
+    environment:
+      POSTGRES_USER: pathfinder
+      POSTGRES_PASSWORD: pathfinder   # 只给本地开发用，云端数据库另设密码
+      POSTGRES_DB: pathfinder
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:

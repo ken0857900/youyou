@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+psycopg[binary]
+python-dotenv
+pydantic
+httpx  # TestClient only (no non-ASCII here: pip reads this file as GBK on Windows)
+pillow
+python-multipart
+pypdf

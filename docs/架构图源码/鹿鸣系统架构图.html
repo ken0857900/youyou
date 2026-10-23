@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>鹿鸣系统架构图</title>
+<!-- 系统架构图源码：改这份后用 Chrome 无头模式重出 PNG（docs/鹿鸣系统架构图.png，2 倍清晰度）：
+     chrome --headless=new --hide-scrollbars --force-device-scale-factor=2 --window-size=1680,1010 --screenshot=鹿鸣系统架构图.png 鹿鸣系统架构图.html
+     图例：深棕实心＝大模型 Agent｜白框＝程序｜金框泳道＝核心创新｜实线＝数据流｜虚线＝回传／支撑 -->
+<style>
+  :root { --bg:#f7f1e8; --ink:#3b2a1e; --agent:#4a3426; --line:#5a4232; --gold:#d8a35a; --gold-bg:#fbefdf; --muted:#8a7360; }
+  * { box-sizing:border-box; margin:0; }
+  body { width:1680px; height:1010px; background:var(--bg); color:var(--ink);
+         font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif; position:relative; overflow:hidden; }
+  .abs { position:absolute; }
+  h1 { position:absolute; left:0; right:0; top:14px; text-align:center; font-size:44px; font-weight:800; letter-spacing:2px; }
+  .sub { position:absolute; left:0; right:0; top:72px; text-align:center; font-size:22px; color:var(--muted); font-weight:600; }
+  .frame { position:absolute; border:3px solid var(--agent); border-radius:6px; background:#fffaf3; }
+  .frame > .ft { position:absolute; left:0; top:0; right:0; height:38px; background:var(--agent); color:#fff;
+                 font-size:21px; font-weight:700; padding:6px 16px; }
+  .lane { position:absolute; border:1.5px dashed #c9b39c; border-radius:6px; background:#fffdf9; }
+  .lane.core { border:3px solid var(--gold); background:var(--gold-bg); }
+  .lane > .lt { position:absolute; left:14px; top:8px; font-size:19px; font-weight:800; }
+  .lane > .lt small { font-size:15px; font-weight:600; color:var(--muted); margin-left:6px; }
+  .lane.core > .lt::after { content:"核心创新"; margin-left:10px; font-size:12px; font-weight:700; color:#fff;
+                 background:var(--gold); border-radius:3px; padding:1px 6px; vertical-align:3px; }
+  .box { position:absolute; display:flex; flex-direction:column; justify-content:center; align-items:center;
+         text-align:center; border-radius:4px; font-size:15px; font-weight:700; line-height:1.25; padding:4px 6px; }
+  .box small { font-size:12px; font-weight:500; margin-top:2px; line-height:1.3; }
+  .agent { background:var(--agent); color:#fff; box-shadow:2px 2px 0 rgba(0,0,0,.15); }
+  .agent small { color:#ead9c6; }
+  .prog { background:#fff; border:1.5px solid var(--line); color:var(--ink); }
+  .prog small { color:var(--muted); }
+  .stack { box-shadow:4px -4px 0 -1px #fff, 4px -4px 0 0 var(--agent), 8px -8px 0 -1px #fff, 8px -8px 0 0 var(--agent); }
+  .tag { position:absolute; font-size:13px; color:var(--ink); white-space:nowrap; }
+  .tag.m { color:var(--muted); }
+  .tag.o { color:#c0762a; font-weight:700; }
+  .person { position:absolute; text-align:center; font-size:19px; font-weight:800; line-height:1.3; }
+  .person i { display:block; margin:0 auto 4px; width:44px; height:52px; position:relative; }
+  .person i::before { content:""; position:absolute; left:11px; top:0; width:22px; height:22px; border-radius:50%; background:#a0785a; }
+  .person i::after { content:"";  position:absolute; left:2px; top:25px; width:40px; height:27px; border-radius:20px 20px 4px 4px; background:#a0785a; }
+  .person small { font-size:14px; font-weight:600; }
+  .db { position:absolute; text-align:center; font-size:18px; font-weight:800; }
+  .db small { display:block; font-size:13px; font-weight:500; color:var(--muted); }
+  .ext { position:absolute; background:#f3e9dc; border:1.5px solid var(--line); border-radius:4px; display:flex; flex-direction:column;
+         justify-content:center; align-items:center; font-size:15px; font-weight:700; text-align:center; line-height:1.3; }
+  .ext small { font-size:12px; font-weight:500; color:var(--muted); }
+  .legend { position:absolute; font-size:13px; line-height:1.6; border:1.5px solid var(--line); background:#fff; padding:6px 10px; border-radius:4px; }
+  .legend b { display:inline-block; width:14px; height:12px; vertical-align:-1px; margin-right:4px; }
+  svg { position:absolute; left:0; top:0; pointer-events:none; }
+</style>
+</head>
+<body>
+<h1>鹿鸣 LUMING 系统架构</h1>
+<div class="sub">程序做得到的用程序，Agent 只做程序做不到的判断　·　全平台 10 个 AI 角色</div>
+
+<div class="person" style="left:18px;top:196px"><i></i>分享者<br><small>（北大邮箱验证）</small></div>
+<div class="person" style="left:28px;top:440px"><i></i>读者</div>
+
+<!-- 阿里云 ECS -->
+<div class="frame" style="left:150px;top:118px;width:1170px;height:870px"><div class="ft">阿里云 ECS（nginx + systemd + Docker）</div></div>
+<div class="box prog" style="left:172px;top:172px;width:86px;height:700px;font-size:17px">鹿鸣网站<small>React + Vite<br>nginx 提供</small><small style="margin-top:14px">连不上后端时<br>读光华快照<br>画面不白屏</small></div>
+
+<!-- 写入 -->
+<div class="lane" id="L1" style="left:276px;top:166px;width:1000px;height:96px"><div class="lt">写入 <small>文章变成可搜索的数据</small></div></div>
+<!-- 搜索 -->
+<div class="lane core" id="L2" style="left:276px;top:274px;width:1000px;height:262px"><div class="lt">搜索 <small>Multi-Agent 判断谁的处境像你</small></div></div>
+<!-- 互动 -->
+<div class="lane" id="L3" style="left:276px;top:548px;width:1000px;height:148px"><div class="lt">互动 <small>搜不到就求经验，看中就预约</small></div></div>
+<!-- 保鲜度 -->
+<div class="lane core" id="L4" style="left:276px;top:708px;width:1000px;height:152px"><div class="lt">经验保鲜度核验 <small>经验过期自动标色</small></div></div>
+
+<!-- 写入 lane -->
+<div class="box agent" id="w1" style="left:420px;top:198px;width:150px;height:52px">决策点抽取 Agent<small>每个决策点 11 个字段</small></div>
+<div class="box prog"  id="w2" style="left:640px;top:198px;width:150px;height:52px">作者确认<small>发布前可改每一栏</small></div>
+<div class="box prog"  id="w3" style="left:860px;top:198px;width:170px;height:52px">切块 + 向量化<small>bge-m3，同一交易入库</small></div>
+
+<!-- 搜索 lane row 1 -->
+<div class="box agent" id="s1" style="left:300px;top:322px;width:130px;height:62px">① 处境抽取<br>Agent<small>改错字 + 抽条件</small></div>
+<div class="box prog"  id="s2" style="left:456px;top:322px;width:176px;height:62px">②③ 召回 + 重排<small>SQL 过滤＋向量＋全文<br>RRF 融合 → bge-reranker</small></div>
+<div class="box prog"  id="s3" style="left:658px;top:322px;width:130px;height:62px">④ 分群统计<small>按起点分群<br>算人数</small></div>
+<div class="box agent stack" id="s5" style="left:814px;top:322px;width:156px;height:62px">⑤ 判断 Agent ×N<small>每群一个，并行</small></div>
+<div class="box prog"  id="s6" style="left:996px;top:322px;width:112px;height:62px">⑥ 引用核验<small>原文查不到就删</small></div>
+<div class="box agent" id="s7" style="left:1134px;top:322px;width:116px;height:62px">⑦ 审查 Agent<small>逐群复核</small></div>
+<!-- 搜索 lane row 2：推荐理由 -->
+<div class="box agent" id="r1" style="left:520px;top:450px;width:190px;height:58px">推荐理由 Agent<small>拆条件、逐篇判断<br>8 篇一批并行</small></div>
+<div class="box prog"  id="r2" style="left:760px;top:450px;width:190px;height:58px">程序数红绿灯<small>全对红／≥⅔ 黄／其余绿</small></div>
+<div class="box prog"  id="r3" style="left:1000px;top:450px;width:250px;height:58px">群内按灯排序<small>全绿＝库里没有答案 → 猜你想看</small></div>
+
+<!-- 互动 lane -->
+<div class="box prog"  id="i1" style="left:520px;top:582px;width:170px;height:46px">规则比对<small>挑写过相似经历的人</small></div>
+<div class="box agent" id="i2" style="left:760px;top:582px;width:190px;height:46px">邀请分享者 Agent<small>规则挑不到人时才出手</small></div>
+<div class="box agent" id="i3" style="left:520px;top:640px;width:170px;height:46px">日历助手 Agent<small>一句话 → 规则</small></div>
+<div class="box prog"  id="i4" style="left:760px;top:640px;width:190px;height:46px">算日期、取交集<small>日期由程序算，确认才写入</small></div>
+
+<!-- 保鲜度 lane -->
+<div class="box prog"  id="f1" style="left:1090px;top:744px;width:160px;height:48px">爬虫 crawl()<small>光华官网夏令营通知</small></div>
+<div class="box agent" id="f2" style="left:880px;top:744px;width:160px;height:48px">规则抽取 Agent<small>通知 → 8 类规则</small></div>
+<div class="box agent" id="f3" style="left:420px;top:744px;width:160px;height:48px">主张抽取 Agent<small>文章里的客观规则句</small></div>
+<div class="box prog"  id="f4" style="left:640px;top:744px;width:180px;height:48px">主张挂到最新规则<small>按（项目, 规则类型）比对</small></div>
+<div class="box agent" id="f5" style="left:640px;top:802px;width:180px;height:48px">保鲜度判断 Agent<small>一条规则判底下所有句</small></div>
+<div class="box prog"  id="f6" style="left:880px;top:802px;width:300px;height:48px">写回文章标色<small>🟢 仍成立　🔴 已变更（附官方原文）　🟡 待更新</small></div>
+
+<!-- PostgreSQL -->
+
+<!-- 外部服务 -->
+<div class="frame" style="left:1440px;top:118px;width:226px;height:870px"><div class="ft">外部服务</div></div>
+<div class="ext" id="e1" style="left:1462px;top:180px;width:182px;height:76px">DeepSeek<small>deepseek-flash（关思考）<br>10 个 AI 角色共用</small></div>
+<div class="ext" id="e2" style="left:1462px;top:290px;width:182px;height:76px">SiliconFlow<small>bge-m3 向量<br>bge-reranker-v2-m3 重排</small></div>
+<div class="ext" id="e3" style="left:1462px;top:740px;width:182px;height:56px">北大光华官网<small>招生通知（公开）</small></div>
+<div class="ext" id="e4" style="left:1462px;top:830px;width:182px;height:50px">163 邮箱 SMTP<small>注册验证码</small></div>
+
+<div class="legend" style="left:1452px;top:896px;width:202px;font-size:12px;padding:4px 8px;line-height:1.45">
+  <div><b style="background:#4a3426"></b>大模型 Agent（共 10 个）</div>
+  <div><b style="background:#fff;border:1.5px solid #5a4232"></b>程序</div>
+  <div><b style="background:#fbefdf;border:2px solid #d8a35a"></b>核心创新</div>
+  <div>实线＝数据流　虚线＝回传</div>
+</div>
+
+<svg width="1680" height="1010" id="wires">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#5a4232"/></marker>
+    <marker id="ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#c0762a"/></marker>
+  </defs>
+</svg>
+
+<script>
+// 线：[起点框, 起点边, 终点框, 终点边, 样式, 中途折点(可选)]；边 l/r/t/b，可带比例如 'b.3'
+const W = [
+  // 人 → 网站
+  [[100,226],[172,226]], [[80,486],[172,486]],
+  // 写入
+  [[258,224],[420,224]], ['w1','r','w2','l'], ['w2','r','w3','l'], ['w3','r',[1290,224]],
+  // 搜索
+  [[258,353],[300,353]], ['s1','r','s2','l'], ['s2','r','s3','l'], ['s3','r','s5','l'], ['s5','r','s6','l'], ['s6','r','s7','l'],
+  [[258,479],[520,479]], ['r1','r','r2','l'], ['r2','r','r3','l'],
+  // 互动
+  [[258,605],[520,605]], ['i1','r','i2','l'], ['i2','r',[1290,605]],
+  [[258,663],[520,663]], ['i3','r','i4','l'], ['i4','r',[1290,663]],
+  // 保鲜度：爬虫 → 规则抽取 → 挂规则；文章 → 主张抽取 → 挂规则 → 判断 → 标色
+  ['f1','l','f2','r'], ['f2','l','f4','r'], ['f3','r','f4','l'], ['f4','b','f5','t'], ['f5','r','f6','l'], ['f6','r',[1290,826]],
+  [[258,768],[420,768]],
+];
+const svg = document.getElementById('wires');
+const rect = id => { const e = document.getElementById(id); return { x:e.offsetLeft, y:e.offsetTop, w:e.offsetWidth, h:e.offsetHeight }; };
+function pt(id, side) {
+  const r = rect(id), [s, f] = side.split('.'); const k = f ? Number('0.' + f) : 0.5;
+  return { l:[r.x, r.y + r.h * k], r:[r.x + r.w, r.y + r.h * k], t:[r.x + r.w * k, r.y], b:[r.x + r.w * k, r.y + r.h] }[s];
+}
+function line(points, opt = {}) {
+  const p = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+  p.setAttribute('points', points.map(q => q.join(',')).join(' '));
+  p.setAttribute('fill', 'none'); p.setAttribute('stroke', opt.c || '#5a4232'); p.setAttribute('stroke-width', opt.w || 2);
+  if (opt.d) p.setAttribute('stroke-dasharray', '6 4');
+  if (!opt.noArrow) p.setAttribute('marker-end', `url(#${opt.m || 'a'})`);
+  svg.appendChild(p);
+}
+for (const w of W) {
+  if (Array.isArray(w[0])) { line(w); continue; }
+  const [a, as, b, bs, st] = w;
+  const p1 = pt(a, as);
+  const p2 = Array.isArray(b) ? b : pt(b, bs);
+  const d = st === 'd' || bs === 'd';
+  if (p1[0] !== p2[0] && p1[1] !== p2[1]) {  // 折一次：先横后竖或先竖后横
+    const mid = (as[0] === 'b' || as[0] === 't') ? [p1[0], p2[1]] : [p2[0], p1[1]];
+    line([p1, mid, p2], { d });
+  } else line([p1, p2], { d });
+}
+// 数据库总线（右侧竖线）
+line([[1290,180],[1290,906],[1152,906]], { w:4 });
+// 外部服务调用
+line([[1320,218],[1462,218]], { d:true }); line([[1320,328],[1462,328]], { d:true }); line([[1320,855],[1462,855]], { d:true });
+line([[1462,768],[1250,768]], { d:true });
+// 打回重判（橙色）：审查 → 判断
+line([[1192,384],[1192,400],[892,400],[892,388]], { c:'#c0762a', d:true, m:'ao' });
+// 搜索结果回网页（SSE）
+line([[1268,353],[1268,428],[262,428]], { d:true });
+line([[1250,350],[1268,350]], { d:true, noArrow:true });
+// 推荐理由回网页
+line([[1125,508],[1125,524],[262,524]], { d:true });
+const T = [
+  ['tag', 330,204,'发文'], ['tag', 1180,206,'入库'],
+  ['tag o', 905,402,'不通过打回重判（≤ 2 轮）'], ['tag m', 814,296,'工具：get_person_timeline（每群 ≤ 4 次）'],
+  ['tag m', 300,410,'SSE 实时推送：①–④ 做完先出分群结果 → 每群判断完推 group → 审查完推 review → done'],
+  ['tag m', 300,458,'另一个请求同时跑'], ['tag m', 300,486,'/api/filters/why'], ['tag m', 300,506,'红绿灯 + 推荐理由回网页'],
+  ['tag', 285,587,'按「我想看」，同一需求满 5 人'], ['tag', 960,588,'站内通知邀请撰写'],
+  ['tag', 285,645,'一句话设可约时间'], ['tag', 960,646,'确认后写入'],
+  ['tag', 290,748,'发文／改文后'], ['tag', 290,773,'背景触发'], ['tag', 1048,752,''],
+  ['tag m', 1324,198,'Agent 调用'], ['tag m', 1324,308,'向量／重排'], ['tag m', 1324,835,'寄验证码'], ['tag m', 1300,748,'抓通知'],
+  ['tag m', 1298,884,'读写'],
+];
+for (const [cls, x, y, txt] of T) {
+  if (!txt) continue;
+  const e = document.createElement('div'); e.className = cls;
+  e.style.left = x + 'px'; e.style.top = y + 'px'; e.textContent = txt; document.body.appendChild(e);
+}
+// 数据库圆柱
+const cyl = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+cyl.innerHTML = '<path d="M430 906 a361 12 0 0 0 722 0 v52 a361 12 0 0 1 -722 0z" fill="#fff" stroke="#3b2a1e" stroke-width="2"/><ellipse cx="791" cy="906" rx="361" ry="12" fill="#fff" stroke="#3b2a1e" stroke-width="2"/>';
+svg.insertBefore(cyl, svg.firstChild.nextSibling);
+</script>
+<div class="db" style="left:430px;top:922px;width:720px;z-index:2">PostgreSQL 17<small>关系表 · pgvector 向量 · zhparser 中文全文 · search_logs 检索过程</small></div>
+</body>
+</html>
