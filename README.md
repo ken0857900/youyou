@@ -130,8 +130,8 @@ npm run dev
 
 | 负责人 | 范围 |
 |---|---|
-| 同学 | RAG 系统（`RAG/`） |
-| 最伟大的 | 网站视觉设计、PPT、演示影片、邮件服务设置 |
-| Ken | RAG 以外的全部：配置、写作与入库、搜索 agent、前端、部署 |
+| 薛星海 | RAG 系统（`RAG/`） |
+| 沈咏琪、張菀芸 | 网站视觉设计、PPT、演示影片、邮件服务设置 |
+| 张仲德 | 配置、写作与入库、搜索 agent、前端、部署 |
 
 RAG 与其余部分的接口：`RAG/` 提供 `index_article`、`search`、`verify_quotes` 等函数（见 [RAG/README.md](RAG/README.md)），`backend/app/agents.py` 直接调用。
